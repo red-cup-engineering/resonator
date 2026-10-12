@@ -1,0 +1,57 @@
+{
+  "name": "@red-cup-engineering/resonator",
+  "version": "0.2.1",
+  "type": "module",
+  "description": "The Ashlar fiber's audio/music engine: a parameterized synthesis core (voices as data, node-testable and WebAudio-renderable from the same params), a seeded/scale-aware/intensity-driven procedural music layer rendered as event streams, and a game-audio kit (preset banks, mixing/ducking, reduced-audio mode, volume persistence) on top. The DSP core was ported from @red-cup-engineering/music-engineering-services-section (Red Cup's ambient-render engine) and has since evolved independently; the generative core is consumed directly as a dependency on that same package rather than forked. See README for the absorption note.",
+  "keywords": [
+    "561-group",
+    "ashlar-fabrication",
+    "audio",
+    "music",
+    "dsp",
+    "webaudio",
+    "procedural",
+    "deterministic"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "exports": {
+    "./voice": {
+      "default": "./src/voice/voice.mjs"
+    },
+    "./voice-presets": {
+      "default": "./src/voice/presets.mjs"
+    },
+    "./audio-engine": {
+      "default": "./src/web/audio-engine.mjs"
+    },
+    "./graph": {
+      "default": "./src/web/graph.mjs"
+    },
+    "./voice-buffer": {
+      "default": "./src/web/voice-buffer.mjs"
+    },
+    "./persistence": {
+      "default": "./src/web/persistence.mjs"
+    },
+    "./game": {
+      "default": "./src/game/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "docs"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@red-cup-engineering/computer-audio-engineering-services-section": "workspace:*",
+    "@red-cup-engineering/music-engineering-services-section": "workspace:*"
+  },
+  "scripts": {
+    "check": "for f in $(find src scripts -name '*.mjs' 2>/dev/null); do node --check \"$f\" || exit 1; done; echo 'all .mjs files parse cleanly'",
+    "test": "node --test"
+  }
+}
