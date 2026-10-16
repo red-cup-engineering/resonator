@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/resonator",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "The Ashlar fiber's audio/music engine: a parameterized synthesis core (voices as data, node-testable and WebAudio-renderable from the same params), a seeded/scale-aware/intensity-driven procedural music layer rendered as event streams, and a game-audio kit (preset banks, mixing/ducking, reduced-audio mode, volume persistence) on top. The DSP core was ported from @red-cup-engineering/music-engineering-services-section (Red Cup's ambient-render engine) and has since evolved independently; the generative core is consumed directly as a dependency on that same package rather than forked. See README for the absorption note.",
   "keywords": [
@@ -47,11 +47,12 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@red-cup-engineering/computer-audio-engineering-services-section": "workspace:*",
-    "@red-cup-engineering/music-engineering-services-section": "workspace:*"
+    "@red-cup-engineering/computer-audio-engineering-services-section": "0.2.0",
+    "@red-cup-engineering/music-engineering-services-section": "0.2.1"
   },
   "scripts": {
     "check": "for f in $(find src scripts -name '*.mjs' 2>/dev/null); do node --check \"$f\" || exit 1; done; echo 'all .mjs files parse cleanly'",
     "test": "node --test"
-  }
+  },
+  "private": false
 }
