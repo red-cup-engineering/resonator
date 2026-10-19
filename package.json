@@ -5,8 +5,7 @@
   "description": "The Ashlar fiber's audio/music engine: a parameterized synthesis core (voices as data, node-testable and WebAudio-renderable from the same params), a seeded/scale-aware/intensity-driven procedural music layer rendered as event streams, and a game-audio kit (preset banks, mixing/ducking, reduced-audio mode, volume persistence) on top. The DSP core was ported from @red-cup-engineering/music-engineering-services-section (Red Cup's ambient-render engine) and has since evolved independently; the generative core is consumed directly as a dependency on that same package rather than forked. See README for the absorption note.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/red-cup-engineering/computer-systems-engineering-services-section.git",
-    "directory": "services/computer-game-system-services-section/services/resonator"
+    "url": "git+https://github.com/red-cup-engineering/resonator.git"
   },
   "keywords": [
     "561-group",
