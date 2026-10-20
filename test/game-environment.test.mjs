@@ -57,7 +57,7 @@ test('source conditions and rendering budgets must be explicitly admitted', () =
   for(const kind of [undefined,'clear','storm','plaza','unknown','']) {
     assert.throws(() => render(kind), /source must select/);
   }
-  for(const durationSec of [0,0.1,Infinity,-1,9,NaN]) {
+  for(const durationSec of [0,0.1,Infinity,-1,9,NaN,null]) {
     assert.throws(() => render('rain',{durationSec}), /duration/);
   }
   for(const detail of [-0.5,1.01,NaN,Infinity,null]) {
