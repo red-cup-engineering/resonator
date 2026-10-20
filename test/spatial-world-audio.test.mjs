@@ -123,3 +123,10 @@ test('the existing seeded cue player carries position to the existing event sche
   const preview = createGameAudio().play('chime', {seed: 'world-event-42', position});
   assert.deepEqual(preview, result.cueRender, 'position changes playback location, not generated sonic identity');
 });
+
+test('a throwing audio-device provider remains silent without disturbing the world reading', () => {
+  const engine = createAudioEngine({ contextFactory: () => { throw new Error('audio device unavailable'); } });
+  assert.equal(engine.ensureStarted(), false);
+  assert.equal(engine.isSilent(), true);
+  assert.equal(engine.playVoice(voice, { position: point(2, 0, 0) }), null);
+});
