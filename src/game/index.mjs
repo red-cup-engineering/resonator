@@ -103,7 +103,7 @@ export function createGameAudio(opts = {}) {
   function play(name, playOpts = {}) {
     const cueRender = resolve(name, playOpts);
     if (!engine) return cueRender;
-    const handles = engine.schedule(cueRender.notes, { channel: playOpts.channel ?? 'sfx' });
+    const handles = engine.schedule(cueRender.notes, { channel: playOpts.channel ?? 'sfx', position: playOpts.position });
     return { cueRender, handles };
   }
 
