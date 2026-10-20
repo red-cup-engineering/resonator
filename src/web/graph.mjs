@@ -102,22 +102,6 @@ export function buildChannelBuses(ctx, masterGain, channelNames = DEFAULT_CHANNE
   return buses;
 }
 
-/**
- * Creates a BufferSourceNode playing `audioBuffer` through its own per-play
- * GainNode into `destinationNode` (typically a channel bus from
- * buildChannelBuses), and starts it. Returns both nodes so a caller can stop
- * the source early (e.g. interrupting a looping ambient bed) or fade the
- * per-play gain independently of the channel bus.
- * @param {object} ctx
- * @param {object} audioBuffer - from voice-buffer.mjs's renderedVoiceToAudioBuffer
- * @param {object} destinationNode - a channel bus GainNode (or any connectable node)
- * @param {object} [opts]
- * @param {number} [opts.gain=1] - linear gain for this one play
- * @param {number} [opts.when=0] - ctx-time-relative start time (absolute ctx.currentTime-based value, not a delay)
- * @param {boolean} [opts.loop=false]
- * @param {{x:number,y:number,z:number}} [opts.position] - optional source-authorized 3D source position, in the listener's coordinate system
- * @returns {{source: object, gain: object, panner: object|null}}
- */
 /** Apply a finite 3D position through the standard Web Audio AudioParam interface.
  * Old setPosition-only browsers are supported without introducing a second spatializer.
  * Return false when the host exposes no position control. The caller must keep
@@ -141,6 +125,23 @@ export function setSpatialPosition(node, position) {
   return false;
 }
 
+
+/**
+ * Creates a BufferSourceNode playing `audioBuffer` through its own per-play
+ * GainNode into `destinationNode` (typically a channel bus from
+ * buildChannelBuses), and starts it. Returns both nodes so a caller can stop
+ * the source early (e.g. interrupting a looping ambient bed) or fade the
+ * per-play gain independently of the channel bus.
+ * @param {object} ctx
+ * @param {object} audioBuffer - from voice-buffer.mjs's renderedVoiceToAudioBuffer
+ * @param {object} destinationNode - a channel bus GainNode (or any connectable node)
+ * @param {object} [opts]
+ * @param {number} [opts.gain=1] - linear gain for this one play
+ * @param {number} [opts.when=0] - ctx-time-relative start time (absolute ctx.currentTime-based value, not a delay)
+ * @param {boolean} [opts.loop=false]
+ * @param {{x:number,y:number,z:number}} [opts.position] - optional source-authorized 3D source position, in the listener's coordinate system
+ * @returns {{source: object, gain: object, panner: object|null}}
+ */
 export function connectBufferSource(ctx, audioBuffer, destinationNode, opts = {}) {
   const source = ctx.createBufferSource();
   source.buffer = audioBuffer;
