@@ -115,8 +115,32 @@ export function buildChannelBuses(ctx, masterGain, channelNames = DEFAULT_CHANNE
  * @param {number} [opts.gain=1] - linear gain for this one play
  * @param {number} [opts.when=0] - ctx-time-relative start time (absolute ctx.currentTime-based value, not a delay)
  * @param {boolean} [opts.loop=false]
- * @returns {{source: object, gain: object}}
+ * @param {{x:number,y:number,z:number}} [opts.position] - optional source-authorized 3D source position, in the listener's coordinate system
+ * @returns {{source: object, gain: object, panner: object|null}}
  */
+/** Apply a finite 3D position through the standard Web Audio AudioParam interface.
+ * Old setPosition-only browsers are supported without introducing a second spatializer.
+ * Return false when the host exposes no position control. The caller must keep
+ * its original caption/text reading; auditory coordinates are never authority.
+ */
+export function setSpatialPosition(node, position) {
+  if (!position || typeof position !== 'object' || Array.isArray(position) ||
+      !['x', 'y', 'z'].every((axis) => typeof position[axis] === 'number' && Number.isFinite(position[axis]))) {
+    throw new TypeError('WebAudio spatial position requires finite x, y and z coordinates');
+  }
+  if (['positionX', 'positionY', 'positionZ'].every((key) => node?.[key] && typeof node[key].value === 'number')) {
+    node.positionX.value = position.x;
+    node.positionY.value = position.y;
+    node.positionZ.value = position.z;
+    return true;
+  }
+  if (typeof node?.setPosition === 'function') {
+    node.setPosition(position.x, position.y, position.z);
+    return true;
+  }
+  return false;
+}
+
 export function connectBufferSource(ctx, audioBuffer, destinationNode, opts = {}) {
   const source = ctx.createBufferSource();
   source.buffer = audioBuffer;
@@ -125,9 +149,29 @@ export function connectBufferSource(ctx, audioBuffer, destinationNode, opts = {}
   const gainNode = ctx.createGain();
   setParamValue(gainNode.gain, opts.gain ?? 1);
 
+  // A position is optional. Unpositioned cues preserve the original mono/stereo
+  // mixer graph; a host without PannerNode keeps an audible, non-spatial cue.
+  // Presence of coordinates never authorizes a world action or invents a source.
+  let panner = null;
+  if (opts.position != null) {
+    // Validate even on a device without spatial audio: malformed semantic
+    // positions must not be silently projected as meaningful sound.
+    setSpatialPosition(null, opts.position);
+    if (typeof ctx.createPanner === 'function') {
+      const candidate = ctx.createPanner();
+      if (typeof candidate?.connect === 'function' && setSpatialPosition(candidate, opts.position)) {
+        candidate.panningModel = 'HRTF';
+        candidate.distanceModel = 'inverse';
+        panner = candidate;
+      }
+    }
+  }
   source.connect(gainNode);
-  gainNode.connect(destinationNode);
+  if (panner) {
+    gainNode.connect(panner);
+    panner.connect(destinationNode);
+  } else gainNode.connect(destinationNode);
   source.start(opts.when ?? 0);
 
-  return { source, gain: gainNode };
+  return { source, gain: gainNode, panner };
 }
