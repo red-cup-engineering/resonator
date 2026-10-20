@@ -37,6 +37,7 @@ import { createCueRegistry } from './cue.mjs';
 import { STANDARD_CUES } from './library.mjs';
 import { buildRiser } from './anticipation.mjs';
 import { buildAmbientBed, duckAmbientForCue } from './ambient.mjs';
+import { buildEnvironmentSoundscape } from './environment.mjs';
 
 export { createCueRegistry } from './cue.mjs';
 export {
@@ -54,6 +55,7 @@ export {
 } from './library.mjs';
 export { buildRiser } from './anticipation.mjs';
 export { buildAmbientBed, duckAmbientForCue } from './ambient.mjs';
+export { buildEnvironmentSoundscape, ENVIRONMENT_KINDS } from './environment.mjs';
 export { resolveIntensity, INTENSITY_TIERS, buildRiseNotes } from './primitives.mjs';
 
 /** The cues STANDARD_CUES plus this default registry adds: 'ambient-bed' (./ambient.mjs) and 'reveal' (./anticipation.mjs's fuller riser-with-outcome primitive, kept under a different name than library.mjs's plain 'riser' so both are reachable by name). */
@@ -61,6 +63,7 @@ function defaultCueSet() {
   return {
     ...STANDARD_CUES,
     'ambient-bed': (rng, opts) => buildAmbientBed(rng, opts),
+    'environment-bed': (rng, opts) => buildEnvironmentSoundscape(rng, opts),
     reveal: (rng, opts) => buildRiser(rng, opts),
   };
 }
