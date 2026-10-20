@@ -159,11 +159,17 @@ export function connectBufferSource(ctx, audioBuffer, destinationNode, opts = {}
     // positions must not be silently projected as meaningful sound.
     setSpatialPosition(null, opts.position);
     if (typeof ctx.createPanner === 'function') {
-      const candidate = ctx.createPanner();
-      if (typeof candidate?.connect === 'function' && setSpatialPosition(candidate, opts.position)) {
-        candidate.panningModel = 'HRTF';
-        candidate.distanceModel = 'inverse';
-        panner = candidate;
+      try {
+        const candidate = ctx.createPanner();
+        if (typeof candidate?.connect === 'function' && setSpatialPosition(candidate, opts.position)) {
+          candidate.panningModel = 'HRTF';
+          candidate.distanceModel = 'inverse';
+          panner = candidate;
+        }
+      } catch {
+        // Failed optional hardware spatialization must not suppress an otherwise
+        // valid original cue, its transcript, or the existing gain/channel path.
+        panner = null;
       }
     }
   }
