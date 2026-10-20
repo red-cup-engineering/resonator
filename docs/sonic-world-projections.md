@@ -93,7 +93,7 @@ native WebAudio spatial emitter position all apply.
 ```js
 // The application already has a lawfully acquired original world frame.
 const weather = originalFrame.clock.weather; // actual Farstone source example
-const kinds = {rain: 'rain', windy: 'wind'}; // only a consumer-authorized mapping
+const kinds = {rain: 'rain', storm: 'wind'}; // Farstone's actual five-state enum
 const kind = kinds[weather];
 if (kind !== undefined && listenerSettings.environmentalAudioEnabled) {
   const played = gameAudio.play('environment-bed', {
@@ -107,12 +107,16 @@ if (kind !== undefined && listenerSettings.environmentalAudioEnabled) {
 }
 ```
 
-The example `windy` mapping is intentionally a **candidate**, not a claim
-that Farstone has a `windy` weather value. A receiving application must
-verify and select from its *actual* authored enumeration and actor-scoped
-source. No cue is played on an unsupported or unknown state. Retaining an
-old ambience after the original world changes is a wrong-world bug. A new
-soundscape **never adds a new server-side weather event**.
+Farstone's original domain weather is `clear, cloudy, rain, storm, fog`
+(`farstone:climate / farstone-weather`), now correctly passed into the
+actor's original perception frame by [Farstone PR #27](https://github.com/red-cup-engineering/farstone.561.group/pull/27).
+The map above selects a rain texture for actual `rain` and a wind
+texture for actual `storm`, a deliberate **presentation choice**, not
+a claim that a storm is nothing but wind. It selects no effect for
+`clear`, `cloudy`, or `fog`. A receiving app must validate source
+scope and the original version, stop old handles on source changes, and
+never assert a nonexistent environment for lack of source. Each soundscape
+**never adds a new server-side weather event**.
 
 The same authorized semantic observation requires **readable** current
 place/weather, distinct optional **spoken reading**, and optional
