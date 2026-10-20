@@ -43,7 +43,7 @@
 // without this module changing.
 
 import { renderVoice } from '../voice/voice.mjs';
-import { buildMasterBus, buildChannelBuses, connectBufferSource, DEFAULT_CHANNELS } from './graph.mjs';
+import { buildMasterBus, buildChannelBuses, connectBufferSource, setSpatialPosition, DEFAULT_CHANNELS } from './graph.mjs';
 import { renderedVoiceToAudioBuffer } from './voice-buffer.mjs';
 import { makeInMemoryStorage, makeDefaultMixerState, loadMixerState, saveMixerState, DEFAULT_STORAGE_KEY } from './persistence.mjs';
 
@@ -102,6 +102,57 @@ export function createAudioEngine(opts = {}) {
   /** @type {'pending'|'started'|'silent'} */
   let startState = 'pending';
   const activeHandles = new Set();
+  let listenerPose = null;
+
+  // WebAudio's AudioListener is a device-relative presentation of a caller's
+  // actual source-derived pose, not a second game camera or position store.
+  function applyListenerPose() {
+    const listener = ctx?.listener;
+    if (!listener || !listenerPose) return false;
+    const located = setSpatialPosition(listener, listenerPose.position);
+    if (listenerPose.forward) {
+      const { forward, up } = listenerPose;
+      const params = ['forwardX', 'forwardY', 'forwardZ', 'upX', 'upY', 'upZ'];
+      const values = [forward.x, forward.y, forward.z, up.x, up.y, up.z];
+      if (params.every((key) => listener[key] && typeof listener[key].value === 'number')) {
+        params.forEach((key, i) => { listener[key].value = values[i]; });
+      } else if (typeof listener.setOrientation === 'function') {
+        listener.setOrientation(...values);
+      }
+    }
+    return located;
+  }
+
+  /** Retain a source-derived listener pose before audio permission is granted.
+   * Coordinates and direction vectors are in one explicitly chosen world frame;
+   * no axis/units/locale can be inferred from the audio device.
+   */
+  function setListenerPose({ position, forward, up } = {}) {
+    setSpatialPosition(null, position); // validate without constructing AudioContext
+    if ((forward === undefined) !== (up === undefined))
+      throw new TypeError('listener orientation requires both forward and up');
+    if (forward !== undefined) {
+      setSpatialPosition(null, forward);
+      setSpatialPosition(null, up);
+      const cross = {
+        x: forward.y * up.z - forward.z * up.y,
+        y: forward.z * up.x - forward.x * up.z,
+        z: forward.x * up.y - forward.y * up.x,
+      };
+      if (!Number.isFinite(cross.x) || !Number.isFinite(cross.y) || !Number.isFinite(cross.z) ||
+          Math.hypot(cross.x, cross.y, cross.z) < 1e-8)
+        throw new RangeError('listener forward and up must be independent');
+    }
+    listenerPose = {
+      position: { ...position },
+      ...(forward === undefined ? {} : { forward: { ...forward }, up: { ...up } }),
+    };
+    applyListenerPose();
+    return getListenerPose();
+  }
+  function getListenerPose() {
+    return listenerPose === null ? null : JSON.parse(JSON.stringify(listenerPose));
+  }
 
   function persist() {
     saveMixerState(storage, storageKey, mixerState);
@@ -135,7 +186,9 @@ export function createAudioEngine(opts = {}) {
   function ensureStarted() {
     if (startState === 'started') return true;
     if (startState === 'silent') return false;
-    const created = contextFactory();
+    // Missing or failed audio devices must not break the original text/world.
+    let created;
+    try { created = contextFactory(); } catch { created = null; }
     if (!created) {
       startState = 'silent';
       return false;
@@ -145,6 +198,7 @@ export function createAudioEngine(opts = {}) {
     masterGain = bus.masterGain;
     channelBuses = buildChannelBuses(ctx, masterGain, channelNames);
     applyAllGainsToGraph();
+    applyListenerPose();
     startState = 'started';
     return true;
   }
@@ -163,6 +217,7 @@ export function createAudioEngine(opts = {}) {
    * @param {string} [playOpts.channel='sfx']
    * @param {number} [playOpts.when=0] - seconds from now
    * @param {number} [playOpts.gain=1] - linear per-play gain, independent of the channel bus's own volume
+   * @param {{x:number,y:number,z:number}} [playOpts.position] - authored sound position, relative to the configured listener frame
    * @param {boolean} [playOpts.loop=false]
    * @returns {{source:object, gain:object, stop(when?:number):void}|null} a playback handle, or null if silent
    */
@@ -183,11 +238,12 @@ export function createAudioEngine(opts = {}) {
     const rendered = renderVoice(params, { sampleRate: ctx.sampleRate });
     const buffer = renderedVoiceToAudioBuffer(ctx, rendered);
     const startAt = ctx.currentTime + Math.max(0, playOpts.when ?? 0);
-    const { source, gain } = connectBufferSource(ctx, buffer, bus, { gain: playOpts.gain ?? 1, when: startAt, loop: !!playOpts.loop });
+    const { source, gain, panner } = connectBufferSource(ctx, buffer, bus, { gain: playOpts.gain ?? 1, when: startAt, loop: !!playOpts.loop, position: playOpts.position });
 
     const handle = {
       source,
       gain,
+      panner,
       stop(when) {
         try {
           source.stop(when);
@@ -223,6 +279,7 @@ export function createAudioEngine(opts = {}) {
         when: startDelaySec + (ev.atSec ?? 0),
         gain: ev.gain ?? 1,
         loop: !!ev.loop,
+        position: ev.position ?? scheduleOpts.position,
       })
     );
   }
@@ -339,6 +396,8 @@ export function createAudioEngine(opts = {}) {
     setChannelMuted,
     isChannelMuted,
     getMixerState,
+    setListenerPose,
+    getListenerPose,
     get context() {
       return ctx;
     },

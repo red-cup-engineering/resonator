@@ -56,10 +56,20 @@ risers). This package's `./web` and `./game` layers are built against that
 eventual richer output without depending on its current in-progress state --
 see "Integration seams" below for exactly how.
 
+## Projecting Semioverse sound, spatial hearing and content alternatives
+
+The original WebAudio engine now accepts optional source-authored 3D positions
+on per-voice, per-event, schedule and game-cue playback, plus a listener pose.
+It preserves the existing `PannerNode`-free cue path, muted channels and
+headless preview. Callers are responsible for using the **same admitted world
+observations** in text, graphics, audio, locale-aware captions and accessible
+controls; a cue does not create a world fact. [Read the source/consumer contract](docs/sonic-world-projections.md),
+including MetroPlat and Farstone independent receiving obligations.
+
 ## `./web` -- WebAudio runtime glue
 
 ```js
-import { createAudioEngine } from '@red-cup-engineering/resonator/web';
+import { createAudioEngine } from '@red-cup-engineering/resonator/audio-engine';
 
 const engine = createAudioEngine();
 
@@ -174,7 +184,7 @@ same `seed` and `intensity` always produces a structurally identical
 
 ```js
 import { createGameAudio } from '@red-cup-engineering/resonator/game';
-import { createAudioEngine } from '@red-cup-engineering/resonator/web';
+import { createAudioEngine } from '@red-cup-engineering/resonator/audio-engine';
 
 const engine = createAudioEngine();
 const gameAudio = createGameAudio({ engine });
@@ -289,7 +299,7 @@ A social-casino consumer wiring a spin's sound (the game logic below is
 illustrative, not part of this package -- `./game` stays generic):
 
 ```js
-import { createAudioEngine } from '@red-cup-engineering/resonator/web';
+import { createAudioEngine } from '@red-cup-engineering/resonator/audio-engine';
 import { createGameAudio } from '@red-cup-engineering/resonator/game';
 
 const engine = createAudioEngine();
