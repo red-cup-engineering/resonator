@@ -130,3 +130,13 @@ test('a throwing audio-device provider remains silent without disturbing the wor
   assert.equal(engine.isSilent(), true);
   assert.equal(engine.playVoice(voice, { position: point(2, 0, 0) }), null);
 });
+
+test('optional PannerNode construction failures preserve the source cue and original channel bus', () => {
+  const context = makeFakeAudioContext();
+  context.createPanner = () => { throw new Error('device panner unavailable'); };
+  const dest = context.createGain();
+  const result = connectBufferSource(context, {}, dest, {position: point(1, 0, 0)});
+  assert.equal(result.panner, null);
+  assert.deepEqual(result.gain._connections, [dest]);
+  assert.equal(result.source._started, true);
+});
