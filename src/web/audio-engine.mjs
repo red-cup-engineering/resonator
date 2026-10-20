@@ -186,7 +186,9 @@ export function createAudioEngine(opts = {}) {
   function ensureStarted() {
     if (startState === 'started') return true;
     if (startState === 'silent') return false;
-    const created = contextFactory();
+    // Missing or failed audio devices must not break the original text/world.
+    let created;
+    try { created = contextFactory(); } catch { created = null; }
     if (!created) {
       startState = 'silent';
       return false;
