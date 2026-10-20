@@ -70,6 +70,67 @@ autoplay rules require a listener-initiated start; mute, per-channel level and
 `stopAll` already belong to the original engine. Neither silent mode nor
 lack of speakers should suppress or reclassify the world transcript.
 
+## Procedural environmental sound from actual world qualities
+
+The original audio producer now accepts a further **source-selected** cue,
+`environment-bed`. Its `kind` is **only** one of `rain`, `wind`, `surf`,
+or `workshop`; these are recipes, not new predicates or meteorological
+measurements. The app must read an actually admitted original world
+environment first, then choose an appropriate recipe. A `clear` or missing
+weather state cannot automatically become `rain`; an institution called
+"workshop" in a text string is no evidence of audible machinery.
+
+The existing `createGameAudio({engine})` and `createAudioEngine` interfaces
+remain unchanged. No sample file, parallel event clock, world sound registry,
+authorization engine, soundtrack composer, or protocol is added. The
+environmental sound is a finite, seeded `CueRender`, made of original
+VoiceParams noise, tone, exciter, filter, and envelope voices. Its authored
+episode duration is bounded **1 to 8 seconds**, with a maximum **8 notes**
+at full detail; it is intentionally **not** described as a seamless looping
+bed. The existing user-gesture, mixer channels, mute/volume, stop handles and
+native WebAudio spatial emitter position all apply.
+
+```js
+// The application already has a lawfully acquired original world frame.
+const weather = originalFrame.clock.weather; // actual Farstone source example
+const kinds = {rain: 'rain', storm: 'wind'}; // Farstone's actual five-state enum
+const kind = kinds[weather];
+if (kind !== undefined && listenerSettings.environmentalAudioEnabled) {
+  const played = gameAudio.play('environment-bed', {
+    kind,
+    seed: `${originalFrame.actor}:${originalFrame.tick}:${kind}`,
+    intensity: listenerSettings.ambientIntensity,
+    detail: listenerSettings.audioRichness, // 0..1, native layers
+    channel: 'ambient',
+  });
+  // Keep played.handles, and stop each on source change, silence or departure.
+}
+```
+
+Farstone's original domain weather is `clear, cloudy, rain, storm, fog`
+(`farstone:climate / farstone-weather`), now correctly passed into the
+actor's original perception frame by [Farstone PR #27](https://github.com/red-cup-engineering/farstone.561.group/pull/27).
+The map above selects a rain texture for actual `rain` and a wind
+texture for actual `storm`, a deliberate **presentation choice**, not
+a claim that a storm is nothing but wind. It selects no effect for
+`clear`, `cloudy`, or `fog`. A receiving app must validate source
+scope and the original version, stop old handles on source changes, and
+never assert a nonexistent environment for lack of source. Each soundscape
+**never adds a new server-side weather event**.
+
+The same authorized semantic observation requires **readable** current
+place/weather, distinct optional **spoken reading**, and optional
+**procedural environment** even when Web Audio is disabled. Silent,
+low-detail, and rich-audio profiles are preferences of the listener, not
+world laws. No one should have to hear a cue to understand or act on the
+world. Preserve language attribution in narration and visual captions.
+
+**Receiving is still separate**: this source producer needs original Node
+suite qualification, listening tests on representative devices, an immutable
+published package and lockfile reception by each world, source/installed
+version verification, and independently witnessed actor usage. Source-code
+presence or V8 module tests alone do not establish the deployed feature.
+
 ## Internationalization, accessibility and individual richness
 
 The **source content owner**, not Resonator, admits the original text,

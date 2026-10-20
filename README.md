@@ -66,6 +66,31 @@ observations** in text, graphics, audio, locale-aware captions and accessible
 controls; a cue does not create a world fact. [Read the source/consumer contract](docs/sonic-world-projections.md),
 including MetroPlat and Farstone independent receiving obligations.
 
+### Source-admitted environmental acoustics
+
+The existing `./game` cue registry now includes `environment-bed` with
+`kind: 'rain'|'wind'|'surf'|'workshop'`. Each is a *procedural sound recipe*,
+not a world/environment claim. Real content owners must select an appropriate
+kind from already-admitted environmental facts. The same sound then plays
+through the existing `createAudioEngine.schedule` path; no sample loader or
+second sound renderer exists.
+
+```js
+const played = gameAudio.play('environment-bed', {
+  kind: 'rain', // only if the original world admits rain here
+  seed: originalWorldEventId,
+  durationSec: 4, // bounded 1..8
+  detail: listenerAudioRichness, // 0..1: from one to several sonic layers
+  channel: 'ambient',
+});
+```
+
+An episode is a finite seeded score, **not a seamless loop**. Its original
+`handles` can be stopped when the world source changes or a listener
+disables ambience. Text and other accessible readings of that source must
+remain independently available. For domain/locale/source and installed
+receiving, see [sonic-world-projections.md](docs/sonic-world-projections.md).
+
 ## `./web` -- WebAudio runtime glue
 
 ```js
