@@ -62,10 +62,10 @@ export function buildEnvironmentSoundscape(rng, opts = {}) {
   const kind = opts.kind;
   if (!Object.hasOwn(PROFILE, kind))
     throw new TypeError('environment: source must select rain, wind, surf or workshop explicitly');
-  const durationSec = opts.durationSec ?? 4;
+  const durationSec = Object.hasOwn(opts, 'durationSec') ? opts.durationSec : 4;
   if (typeof durationSec !== 'number' || !Number.isFinite(durationSec) || durationSec < 1 || durationSec > 8)
     throw new RangeError('environment: episode duration must be finite from 1 to 8 seconds');
-  const detail = finite01(opts.detail ?? 0.7, 'detail');
+  const detail = finite01(Object.hasOwn(opts, 'detail') ? opts.detail : 0.7, 'detail');
   const profile = PROFILE[kind], level = volume(opts.intensity);
   const releaseSec = Math.min(1, durationSec * 0.2);
   const attackSec = Math.min(0.5, durationSec * 0.1);
