@@ -56,6 +56,7 @@ export {
 export { buildRiser } from './anticipation.mjs';
 export { buildAmbientBed, duckAmbientForCue } from './ambient.mjs';
 export { buildEnvironmentSoundscape, ENVIRONMENT_KINDS } from './environment.mjs';
+export { scoreObservations, scoreToResonatorSpec, OBSERVED_SCORE_VERSION, MAX_SCORE_WINDOW_SEC, MAX_SCORE_CUES } from './observed-score.mjs';
 export { resolveIntensity, INTENSITY_TIERS, buildRiseNotes } from './primitives.mjs';
 
 /** The cues STANDARD_CUES plus this default registry adds: 'ambient-bed' (./ambient.mjs) and 'reveal' (./anticipation.mjs's fuller riser-with-outcome primitive, kept under a different name than library.mjs's plain 'riser' so both are reachable by name). */

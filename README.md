@@ -8,6 +8,10 @@ just this package's own preference. Its one runtime dependency is
 `@red-cup-engineering/music-engineering-services-section`, which supplies the
 `./generative` layer -- see "Absorption note" below.
 
+## Source-witnessed Foley scores
+
+The original `./game` API now exposes a pure [observed-event score compiler](docs/observed-activity-scoring.md): it preserves original event IDs, times, attempt/outcome distinctions and provenance; produces deterministic, bounded `CueRender` schedules from the **existing** game-cue registry; and supplies activity-density breakpoints only for genuinely complete observation windows. It does not auto-play, infer missing world conditions, authorize publication or implement an economic seller. This is the reusable foundation for MetroPlat actor Foley and an eventual A2A/x402 hired score service, tracked under [issue #3](https://github.com/red-cup-engineering/resonator/issues/3).
+
 ## What's here
 
 - **`./dsp`** -- the DSP core: phase-accumulator oscillators, click-free
