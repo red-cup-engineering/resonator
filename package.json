@@ -58,5 +58,10 @@
     "check": "for f in $(find src scripts -name '*.mjs' 2>/dev/null); do node --check \"$f\" || exit 1; done; echo 'all .mjs files parse cleanly'",
     "test": "node --test"
   },
-  "private": false
+  "private": false,
+  "license": "MIT",
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
+  }
 }
